@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kuliner_jogja/screen/edit_screen.dart';
 import 'create_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -59,22 +60,37 @@ class _HomeScreenState extends State<HomeScreen> {
         itemBuilder: (context, index) {
           final item = foodItems[index];
           return Card(
-            color: Colors.yellow, // Warna latar belakang
-            elevation: 4.0, // Efek bayangan
-            margin: EdgeInsets.symmetric(
-                vertical: 8, horizontal: 16), // Margin antara item
+            color: Colors.yellow,
+            elevation: 4.0,
+            margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
             child: ListTile(
-              leading: item['image'] != null // Menampilkan foto jika ada
+              leading: item['image'] != null
                   ? Image.file(item['image'],
                       height: 40, width: 40, fit: BoxFit.cover)
-                  : Icon(Icons.fastfood), // Ikon jika tidak ada foto
-              title: Text(item['name']), // Nama kuliner
-              subtitle: Text("Lokasi: ${item['location']}"), // Lokasi kuliner
-              trailing: Text(item['priceRange'] ?? ''), // Kisaran harga
+                  : Icon(Icons.fastfood),
+              title: Text(item['name']),
+              subtitle: Text("Lokasi: ${item['location']}"),
+              trailing: Text(item['priceRange'] ?? ''),
+              onTap: () => _editFoodItem(
+                  index), // Tambahkan metode untuk navigasi ke EditScreen
             ),
           );
         },
       );
+    }
+  }
+
+  void _editFoodItem(int index) async {
+    final editedItem = await Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => EditScreen(foodItem: foodItems[index])),
+    );
+
+    if (editedItem != null) {
+      setState(() {
+        foodItems[index] = editedItem; // Perbarui item yang diubah
+      });
     }
   }
 }
