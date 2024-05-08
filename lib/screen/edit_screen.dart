@@ -3,7 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 class EditScreen extends StatefulWidget {
-  final Map<String, dynamic> foodItem; // Data yang diterima dari HomeScreen
+  final Map<String, dynamic> foodItem; // Data kuliner yang akan diedit
 
   EditScreen({Key? key, required this.foodItem}) : super(key: key);
 
@@ -20,7 +20,7 @@ class _EditScreenState extends State<EditScreen> {
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.foodItem['name']); // Inisialisasi dengan data
+    _nameController = TextEditingController(text: widget.foodItem['name']);
     _locationController = TextEditingController(text: widget.foodItem['location']);
     _selectedPriceRange = widget.foodItem['priceRange'] ?? '';
     if (widget.foodItem['image'] != null) {
@@ -33,6 +33,12 @@ class _EditScreenState extends State<EditScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Edit Kuliner"),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.delete), // Ikon hapus
+            onPressed: _onDeletePressed, // Fungsi untuk menghapus data
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -117,6 +123,11 @@ class _EditScreenState extends State<EditScreen> {
     };
 
     Navigator.pop(context, updatedItem); // Kirim data kembali ke HomeScreen
+  }
+
+  void _onDeletePressed() {
+    // Mengirim sinyal bahwa data harus dihapus
+    Navigator.pop(context, null); // Kirimkan null untuk menandakan penghapusan
   }
 
   @override

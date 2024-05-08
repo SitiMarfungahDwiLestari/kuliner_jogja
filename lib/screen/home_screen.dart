@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:kuliner_jogja/screen/edit_screen.dart';
 import 'create_screen.dart';
+import 'edit_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final String email;
@@ -12,8 +12,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<Map<String, dynamic>> foodItems =
-      []; // Daftar makanan, dengan informasi detail
+  List<Map<String, dynamic>> foodItems = []; // Daftar makanan
 
   @override
   Widget build(BuildContext context) {
@@ -40,8 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (newItem != null) {
       setState(() {
-        foodItems.add(newItem
-            as Map<String, dynamic>); // Tambahkan item baru ke daftar makanan
+        foodItems.add(newItem as Map<String, dynamic>);
       });
     }
   }
@@ -71,8 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
               title: Text(item['name']),
               subtitle: Text("Lokasi: ${item['location']}"),
               trailing: Text(item['priceRange'] ?? ''),
-              onTap: () => _editFoodItem(
-                  index), // Tambahkan metode untuk navigasi ke EditScreen
+              onTap: () => _editFoodItem(index),
             ),
           );
         },
@@ -87,9 +84,14 @@ class _HomeScreenState extends State<HomeScreen> {
           builder: (context) => EditScreen(foodItem: foodItems[index])),
     );
 
-    if (editedItem != null) {
+    if (editedItem == null) {
+      // Menghapus jika sinyal penghapusan diterima
       setState(() {
-        foodItems[index] = editedItem; // Perbarui item yang diubah
+        foodItems.removeAt(index); // Menghapus item
+      });
+    } else {
+      setState(() {
+        foodItems[index] = editedItem; // Perbarui item yang diedit
       });
     }
   }
