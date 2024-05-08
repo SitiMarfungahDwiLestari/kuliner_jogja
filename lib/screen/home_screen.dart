@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kuliner_jogja/screen/create_screen.dart';
 import 'package:kuliner_jogja/widget/header_widget.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -18,12 +19,14 @@ class HomeScreen extends StatelessWidget {
       // Menambahkan FloatingActionButton
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Logika untuk menambahkan item ke daftar (nanti diimplementasikan)
-          // Biasanya, kita bisa memanggil layar baru untuk menambahkan item baru
-          print("FAB ditekan");
+          // Navigasi ke halaman CreateScreen
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => CreateScreen()),
+          );
         },
-        child: Icon(Icons.add), // Ikon tanda +
-        backgroundColor: Colors.blue,
+        child: Icon(Icons.add),
+        backgroundColor: Colors.yellow,
       ),
       body: SafeArea(
         child: Center(
