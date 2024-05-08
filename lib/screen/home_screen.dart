@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:kuliner_jogja/screen/create_screen.dart';
-import 'package:kuliner_jogja/widget/header_widget.dart';
+import 'create_screen.dart';
 
-class HomeScreen extends StatelessWidget {
-  HomeScreen({super.key, required this.email});
-
+class HomeScreen extends StatefulWidget {
   final String email;
 
-  // Simulasi daftar makanan, untuk sementara kita kosongkan
-  final List<String> foodItems = [];
+  HomeScreen({Key? key, required this.email}) : super(key: key);
+
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  List<String> foodItems = []; // Daftar makanan
 
   @override
   Widget build(BuildContext context) {
@@ -16,36 +19,34 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text("Daftar Kuliner Jogja"),
       ),
-      // Menambahkan FloatingActionButton
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Navigasi ke halaman CreateScreen
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => CreateScreen()),
-          );
-        },
+        onPressed: _goToCreateScreen, // Metode untuk navigasi ke CreateScreen
         child: Icon(Icons.add),
-        backgroundColor: Colors.yellow,
+        backgroundColor: Colors.blue,
       ),
       body: SafeArea(
-        child: Center(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child:
-                    _buildContent(), // Memanggil metode untuk menampilkan konten
-              ),
-            ],
-          ),
-        ),
+        child: _buildContent(),
       ),
     );
   }
 
+  void _goToCreateScreen() async {
+    // Navigasi ke CreateScreen dan tunggu nilai yang dikembalikan
+    final newItem = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => CreateScreen()),
+    );
+
+    if (newItem != null) {
+      // Jika nilai dikembalikan, tambahkan ke daftar
+      setState(() {
+        foodItems
+            .add(newItem as String); // Tambahkan item baru ke daftar makanan
+      });
+    }
+  }
+
   Widget _buildContent() {
-    // Jika daftar kosong, tampilkan pesan
     if (foodItems.isEmpty) {
       return Center(
         child: Text(
@@ -54,12 +55,17 @@ class HomeScreen extends StatelessWidget {
         ),
       );
     } else {
-      // Jika daftar tidak kosong, tampilkan item
       return ListView.builder(
         itemCount: foodItems.length,
         itemBuilder: (context, index) {
-          return ListTile(
-            title: Text(foodItems[index]), // Tampilkan nama makanan
+          return Card(
+            color: Colors.yellow, // Latar belakang kuning
+            elevation: 4.0, // Efek bayangan
+            margin: EdgeInsets.symmetric(
+                vertical: 8, horizontal: 16), // Margin antara item
+            child: ListTile(
+              title: Text(foodItems[index]),
+            ),
           );
         },
       );
