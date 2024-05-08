@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:kuliner_jogja/screen/home_screen.dart';
 import 'package:kuliner_jogja/widget/footer_widget.dart';
@@ -14,6 +13,7 @@ class LoginScreen extends StatelessWidget {
     var password = TextEditingController();
     var formKey = GlobalKey<FormState>();
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
           child: Center(
         child: Column(children: [

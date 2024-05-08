@@ -11,7 +11,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<String> foodItems = []; // Daftar makanan
+  List<Map<String, dynamic>> foodItems =
+      []; // Daftar makanan, dengan informasi detail
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +21,7 @@ class _HomeScreenState extends State<HomeScreen> {
         title: Text("Daftar Kuliner Jogja"),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _goToCreateScreen, // Metode untuk navigasi ke CreateScreen
+        onPressed: _goToCreateScreen,
         child: Icon(Icons.add),
         backgroundColor: Colors.blue,
       ),
@@ -31,17 +32,15 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _goToCreateScreen() async {
-    // Navigasi ke CreateScreen dan tunggu nilai yang dikembalikan
     final newItem = await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => CreateScreen()),
     );
 
     if (newItem != null) {
-      // Jika nilai dikembalikan, tambahkan ke daftar
       setState(() {
-        foodItems
-            .add(newItem as String); // Tambahkan item baru ke daftar makanan
+        foodItems.add(newItem
+            as Map<String, dynamic>); // Tambahkan item baru ke daftar makanan
       });
     }
   }
@@ -58,13 +57,20 @@ class _HomeScreenState extends State<HomeScreen> {
       return ListView.builder(
         itemCount: foodItems.length,
         itemBuilder: (context, index) {
+          final item = foodItems[index];
           return Card(
-            color: Colors.yellow, // Latar belakang kuning
+            color: Colors.yellow, // Warna latar belakang
             elevation: 4.0, // Efek bayangan
             margin: EdgeInsets.symmetric(
                 vertical: 8, horizontal: 16), // Margin antara item
             child: ListTile(
-              title: Text(foodItems[index]),
+              leading: item['image'] != null // Menampilkan foto jika ada
+                  ? Image.file(item['image'],
+                      height: 40, width: 40, fit: BoxFit.cover)
+                  : Icon(Icons.fastfood), // Ikon jika tidak ada foto
+              title: Text(item['name']), // Nama kuliner
+              subtitle: Text("Lokasi: ${item['location']}"), // Lokasi kuliner
+              trailing: Text(item['priceRange'] ?? ''), // Kisaran harga
             ),
           );
         },
