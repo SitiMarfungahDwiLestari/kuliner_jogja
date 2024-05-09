@@ -30,12 +30,12 @@ class Kuliner {
 
   static Kuliner fromMap(Map<String, dynamic> map) {
     return Kuliner(
-      name: map['name'] ?? '', // Berikan default jika null
-      location: map['location'] ?? '', // Berikan default jika null
-      minPrice: map['minPrice'] != null ? double.parse(map['minPrice'].toString()) : 0.0, // Tangani null
-      maxPrice: map['maxPrice'] != null ? double.parse(map['maxPrice'].toString()) : 0.0, // Tangani null
-      dishType: map['dishType'] ?? '', // Berikan default jika null
-      image: map['image'] != null ? File(map['image']) : null, // Tangani null
+      name: map['name'] ?? '',
+      location: map['location'] ?? '',
+      minPrice: map['minPrice'] != null ? double.parse(map['minPrice'].toString()) : 0.0,
+      maxPrice: map['maxPrice'] != null ? double.parse(map['maxPrice'].toString()) : 0.0,
+      dishType: map['dishType'] ?? '',
+      image: map['image'] != null ? File(map['image']) : null,
     );
   }
 
@@ -44,7 +44,6 @@ class Kuliner {
         location.isNotEmpty &&
         minPrice >= 0 &&
         maxPrice >= 0 &&
-        minPrice <= maxPrice &&
         dishType.isNotEmpty;
   }
 }

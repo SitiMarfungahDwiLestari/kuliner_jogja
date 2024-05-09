@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:kuliner_jogja/controller/home_controller.dart';
+import 'package:kuliner_jogja/model/kuliner.dart';
 import 'package:kuliner_jogja/screen/create_screen.dart';
 import 'package:kuliner_jogja/screen/edit_screen.dart';
-import 'package:kuliner_jogja/model/kuliner.dart';
 
 class HomeScreen extends StatefulWidget {
   final String email;
@@ -60,8 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: dataFetched
             ? _buildContent()
             : Center(
-                child:
-                    Text("Memuat...")), // Tampilkan konten atau pesan loading
+                child: CircularProgressIndicator()), // Tampilkan loading jika belum diambil
       ),
     );
   }
@@ -79,21 +78,25 @@ class _HomeScreenState extends State<HomeScreen> {
         itemCount: controller.kulinerList.length,
         itemBuilder: (context, index) {
           final item = controller.kulinerList[index];
+          final priceRange = "Rp ${item.minPrice} - Rp ${item.maxPrice}";
           return Card(
+            color: Colors.yellow,
             elevation: 4.0,
             margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
             child: ListTile(
-              leading: Icon(Icons.fastfood),
+              leading: item.image != null
+                  ? Image.file(item.image!, height: 40, width: 40, fit: BoxFit.cover)
+                  : Icon(Icons.fastfood),
               title: Text(item.name),
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text("Lokasi: ${item.location}"),
-                  Text("Jenis: ${item.dishType}"),
-                  Text("Harga: Rp${item.minPrice} - Rp${item.maxPrice}"),
+                  Text("Jenis: ${item.dishType}"), // Menampilkan jenis hidangan
+                  Text("Harga: $priceRange"), // Menampilkan kisaran harga
                 ],
               ),
-              trailing: Icon(Icons.edit),
+              trailing: Icon(Icons.edit), // Ikon untuk mengedit
               onTap: () {
                 Navigator.push(
                   context,
