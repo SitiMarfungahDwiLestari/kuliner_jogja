@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'create_screen.dart';
-import 'edit_screen.dart';
+import 'package:kuliner_jogja/screen/create_screen.dart';
+import 'package:kuliner_jogja/screen/edit_screen.dart';
+import 'package:kuliner_jogja/controller/home_controller.dart';
 
 class HomeScreen extends StatefulWidget {
   final String email;
@@ -12,7 +13,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<Map<String, dynamic>> foodItems = []; // Daftar makanan
+  final HomeController controller = HomeController();
 
   @override
   Widget build(BuildContext context) {
@@ -21,9 +22,11 @@ class _HomeScreenState extends State<HomeScreen> {
         title: Text("Daftar Kuliner Jogja"),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _goToCreateScreen,
+        onPressed: () async {
+          await controller.addItem(context, CreateScreen());
+          setState(() {}); // Perbarui tampilan setelah penambahan item
+        },
         child: Icon(Icons.add),
-        backgroundColor: Colors.blue,
       ),
       body: SafeArea(
         child: _buildContent(),
@@ -31,21 +34,8 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _goToCreateScreen() async {
-    final newItem = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => CreateScreen()),
-    );
-
-    if (newItem != null) {
-      setState(() {
-        foodItems.add(newItem as Map<String, dynamic>);
-      });
-    }
-  }
-
   Widget _buildContent() {
-    if (foodItems.isEmpty) {
+    if (controller.foodItems.isEmpty) {
       return Center(
         child: Text(
           "Ketuk ikon + untuk menambahkan daftar kuliner",
@@ -54,9 +44,9 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     } else {
       return ListView.builder(
-        itemCount: foodItems.length,
+        itemCount: controller.foodItems.length,
         itemBuilder: (context, index) {
-          final item = foodItems[index];
+          final item = controller.foodItems[index];
           final String priceRange =
               "Rp ${item['minPrice']} - Rp ${item['maxPrice']}"; // Kisaran harga
           return Card(
@@ -65,8 +55,7 @@ class _HomeScreenState extends State<HomeScreen> {
             margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
             child: ListTile(
               leading: item['image'] != null
-                  ? Image.file(item['image'],
-                      height: 40, width: 40, fit: BoxFit.cover)
+                  ? Image.file(item['image'], height: 40, width: 40, fit: BoxFit.cover)
                   : Icon(Icons.fastfood),
               title: Text(item['name']),
               subtitle: Column(
@@ -78,30 +67,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
               trailing: Icon(Icons.edit), // Ikon untuk mengedit
-              onTap: () => _editFoodItem(index), // Navigasi ke EditScreen
+              onTap: () async {
+                await controller.editItem(
+                    context, index, EditScreen(foodItem: item));
+                setState(() {}); // Perbarui tampilan setelah mengedit atau menghapus
+              },
             ),
           );
         },
       );
-    }
-  }
-
-  void _editFoodItem(int index) async {
-    final item = foodItems[index];
-    final updatedItem = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => EditScreen(foodItem: item)),
-    );
-
-    if (updatedItem == null) {
-      // Jika item dihapus
-      setState(() {
-        foodItems.removeAt(index); // Hapus item dari daftar
-      });
-    } else {
-      setState(() {
-        foodItems[index] = updatedItem; // Perbarui data yang diedit
-      });
     }
   }
 }

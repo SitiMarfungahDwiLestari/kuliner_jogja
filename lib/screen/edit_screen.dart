@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'dart:io';
-
-import 'package:kuliner_jogja/screen/location_screen.dart';
+import 'package:kuliner_jogja/controller/edit_controller.dart';
 
 class EditScreen extends StatefulWidget {
-  final Map<String, dynamic> foodItem; // Data kuliner yang akan diedit
+  final Map<String, dynamic> foodItem;
 
   EditScreen({Key? key, required this.foodItem}) : super(key: key);
 
@@ -14,30 +11,12 @@ class EditScreen extends StatefulWidget {
 }
 
 class _EditScreenState extends State<EditScreen> {
-  late TextEditingController _nameController;
-  late TextEditingController _locationController;
-  late TextEditingController _minPriceController;
-  late TextEditingController _maxPriceController;
-  late String _selectedDishType;
-  File? _selectedImage;
-  String? _selectedLocation;
+  late EditController controller;
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(
-        text: widget.foodItem['name']); // Mengisi data awal
-    _locationController =
-        TextEditingController(text: widget.foodItem['location']);
-    _minPriceController = TextEditingController(
-        text: widget.foodItem['minPrice'].toString()); // Mengonversi ke string
-    _maxPriceController =
-        TextEditingController(text: widget.foodItem['maxPrice'].toString());
-    _selectedDishType = widget.foodItem['dishType'] ?? '';
-    _selectedLocation = widget.foodItem['location'];
-    if (widget.foodItem['image'] != null) {
-      _selectedImage = widget.foodItem['image'];
-    }
+    controller = EditController(widget.foodItem);
   }
 
   @override
@@ -47,8 +26,8 @@ class _EditScreenState extends State<EditScreen> {
         title: Text("Edit Kuliner"),
         actions: [
           IconButton(
-            icon: Icon(Icons.delete), // Tombol hapus
-            onPressed: _onDeletePressed, // Fungsi untuk menghapus data
+            icon: Icon(Icons.delete),
+            onPressed: _onDeletePressed,
           ),
         ],
       ),
@@ -56,9 +35,10 @@ class _EditScreenState extends State<EditScreen> {
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               TextField(
-                controller: _nameController,
+                controller: controller.nameController,
                 decoration: InputDecoration(
                   labelText: "Nama Kuliner",
                   hintText: "Masukkan nama kuliner",
@@ -66,9 +46,12 @@ class _EditScreenState extends State<EditScreen> {
               ),
               SizedBox(height: 16),
               GestureDetector(
-                onTap: _pickImage, // Memilih gambar
-                child: _selectedImage != null
-                    ? Image.file(_selectedImage!, height: 150)
+                onTap: () async {
+                  await controller.pickImage();
+                  setState(() {}); // Perbarui tampilan setelah memilih gambar
+                },
+                child: controller.selectedImage != null
+                    ? Image.file(controller.selectedImage!, height: 150)
                     : Container(
                         height: 150,
                         decoration: BoxDecoration(
@@ -81,32 +64,34 @@ class _EditScreenState extends State<EditScreen> {
               ),
               SizedBox(height: 16),
               ElevatedButton(
-                onPressed: _selectLocation, // Memilih lokasi
-                child: Text(_selectedLocation ?? "Pilih Lokasi"),
+                onPressed: () async {
+                  await controller.selectLocation(context);
+                  setState(() {}); // Perbarui tampilan setelah memilih lokasi
+                },
+                child: Text(controller.selectedLocation ?? "Pilih Lokasi"),
               ),
               SizedBox(height: 16),
               Row(
-                // Kisaran harga minimum dan maksimum
                 children: [
                   Expanded(
                     child: TextField(
-                      controller: _minPriceController, // Harga minimum
+                      controller: controller.minPriceController,
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
-                        prefixText: "Rp", // Label "Rp"
+                        prefixText: "Rp",
                         labelText: "Harga Minimum",
                       ),
                     ),
                   ),
-                  SizedBox(width: 16), // Jarak antara elemen
+                  SizedBox(width: 16),
                   Text(
-                    "-", // Simbol pemisah
+                    "-",
                     style: TextStyle(fontSize: 24),
                   ),
                   SizedBox(width: 16),
                   Expanded(
                     child: TextField(
-                      controller: _maxPriceController, // Harga maksimum
+                      controller: controller.maxPriceController,
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
                         prefixText: "Rp",
@@ -118,16 +103,9 @@ class _EditScreenState extends State<EditScreen> {
               ),
               SizedBox(height: 16),
               DropdownButton<String>(
-                value: _selectedDishType,
+                value: controller.selectedDishType,
                 hint: Text("Pilih Jenis Hidangan"),
-                items: [
-                  'Hidangan Pembuka',
-                  'Hidangan Utama',
-                  'Hidangan Pencuci Mulut',
-                  'Kopi',
-                  'Non Kopi',
-                  'Jus'
-                ]
+                items: controller.dishTypes
                     .map((type) => DropdownMenuItem(
                           value: type,
                           child: Text(type),
@@ -135,13 +113,24 @@ class _EditScreenState extends State<EditScreen> {
                     .toList(),
                 onChanged: (value) {
                   setState(() {
-                    _selectedDishType = value!;
+                    controller.selectedDishType = value!;
                   });
                 },
               ),
               SizedBox(height: 16),
               ElevatedButton(
-                onPressed: _onSave,
+                onPressed: () {
+                  if (controller.isValid()) {
+                    final updatedItem = controller.getUpdatedData();
+                    Navigator.pop(context, updatedItem);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text("Pastikan semua bidang diisi"),
+                      ),
+                    );
+                  }
+                },
                 child: Text("Simpan"),
               ),
             ],
@@ -149,44 +138,6 @@ class _EditScreenState extends State<EditScreen> {
         ),
       ),
     );
-  }
-
-  void _pickImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        _selectedImage = File(pickedFile.path);
-      });
-    }
-  }
-
-  void _selectLocation() async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => MapScreen(
-          onLocationSelected: (String location) {
-            setState(() {
-              _selectedLocation = location;
-            });
-          },
-        ),
-      ),
-    );
-  }
-
-  void _onSave() {
-    final updatedItem = {
-      'name': _nameController.text.trim(),
-      'location': _selectedLocation,
-      'minPrice': double.parse(_minPriceController.text.trim()),
-      'maxPrice': double.parse(_maxPriceController.text.trim()),
-      'dishType': _selectedDishType,
-      'image': _selectedImage,
-    };
-
-    Navigator.pop(context, updatedItem);
   }
 
   void _onDeletePressed() {
@@ -202,8 +153,8 @@ class _EditScreenState extends State<EditScreen> {
           ),
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context, null);
+              Navigator.pop(context); // Tutup dialog
+              Navigator.pop(context, null); // Kirim sinyal penghapusan
             },
             child: Text("Hapus"),
           ),
@@ -214,10 +165,7 @@ class _EditScreenState extends State<EditScreen> {
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _locationController.dispose();
-    _minPriceController.dispose();
-    _maxPriceController.dispose();
+    controller.dispose();
     super.dispose();
   }
 }
