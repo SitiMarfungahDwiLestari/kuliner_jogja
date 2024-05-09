@@ -16,17 +16,24 @@ class EditScreen extends StatefulWidget {
 class _EditScreenState extends State<EditScreen> {
   late TextEditingController _nameController;
   late TextEditingController _locationController;
-  late String _selectedPriceRange;
-  File? _selectedImage; // Menyimpan gambar yang dipilih
-  String? _selectedLocation; // Menyimpan lokasi yang dipilih
+  late TextEditingController _minPriceController;
+  late TextEditingController _maxPriceController;
+  late String _selectedDishType;
+  File? _selectedImage;
+  String? _selectedLocation;
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.foodItem['name']);
+    _nameController = TextEditingController(
+        text: widget.foodItem['name']); // Mengisi data awal
     _locationController =
         TextEditingController(text: widget.foodItem['location']);
-    _selectedPriceRange = widget.foodItem['priceRange'] ?? '';
+    _minPriceController = TextEditingController(
+        text: widget.foodItem['minPrice'].toString()); // Mengonversi ke string
+    _maxPriceController =
+        TextEditingController(text: widget.foodItem['maxPrice'].toString());
+    _selectedDishType = widget.foodItem['dishType'] ?? '';
     _selectedLocation = widget.foodItem['location'];
     if (widget.foodItem['image'] != null) {
       _selectedImage = widget.foodItem['image'];
@@ -49,7 +56,6 @@ class _EditScreenState extends State<EditScreen> {
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               TextField(
                 controller: _nameController,
@@ -60,16 +66,13 @@ class _EditScreenState extends State<EditScreen> {
               ),
               SizedBox(height: 16),
               GestureDetector(
-                onTap: _pickImage, // Memilih gambar saat diketuk
+                onTap: _pickImage, // Memilih gambar
                 child: _selectedImage != null
-                    ? Image.file(_selectedImage!,
-                        height: 150) // Menampilkan gambar yang dipilih
+                    ? Image.file(_selectedImage!, height: 150)
                     : Container(
                         height: 150,
                         decoration: BoxDecoration(
-                          border: Border.all(
-                              color:
-                                  Colors.grey), // Bingkai jika tidak ada gambar
+                          border: Border.all(color: Colors.grey),
                         ),
                         child: Center(
                           child: Text("Pilih Foto"),
@@ -78,29 +81,67 @@ class _EditScreenState extends State<EditScreen> {
               ),
               SizedBox(height: 16),
               ElevatedButton(
-                onPressed: _selectLocation,
-                child: Text(_selectedLocation ??
-                    "Pilih Lokasi"), // Menampilkan lokasi yang dipilih
+                onPressed: _selectLocation, // Memilih lokasi
+                child: Text(_selectedLocation ?? "Pilih Lokasi"),
+              ),
+              SizedBox(height: 16),
+              Row(
+                // Kisaran harga minimum dan maksimum
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _minPriceController, // Harga minimum
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        prefixText: "Rp", // Label "Rp"
+                        labelText: "Harga Minimum",
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 16), // Jarak antara elemen
+                  Text(
+                    "-", // Simbol pemisah
+                    style: TextStyle(fontSize: 24),
+                  ),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: TextField(
+                      controller: _maxPriceController, // Harga maksimum
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        prefixText: "Rp",
+                        labelText: "Harga Maksimum",
+                      ),
+                    ),
+                  ),
+                ],
               ),
               SizedBox(height: 16),
               DropdownButton<String>(
-                value: _selectedPriceRange,
-                hint: Text("Pilih Kisaran Harga"),
-                items: ['Murah', 'Sedang', 'Mahal']
-                    .map((range) => DropdownMenuItem(
-                          value: range,
-                          child: Text(range),
+                value: _selectedDishType,
+                hint: Text("Pilih Jenis Hidangan"),
+                items: [
+                  'Hidangan Pembuka',
+                  'Hidangan Utama',
+                  'Hidangan Pencuci Mulut',
+                  'Kopi',
+                  'Non Kopi',
+                  'Jus'
+                ]
+                    .map((type) => DropdownMenuItem(
+                          value: type,
+                          child: Text(type),
                         ))
                     .toList(),
                 onChanged: (value) {
                   setState(() {
-                    _selectedPriceRange = value!;
+                    _selectedDishType = value!;
                   });
                 },
               ),
               SizedBox(height: 16),
               ElevatedButton(
-                onPressed: _onSave, // Simpan perubahan
+                onPressed: _onSave,
                 child: Text("Simpan"),
               ),
             ],
@@ -115,7 +156,7 @@ class _EditScreenState extends State<EditScreen> {
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
-        _selectedImage = File(pickedFile.path); // Simpan gambar yang dipilih
+        _selectedImage = File(pickedFile.path);
       });
     }
   }
@@ -127,7 +168,7 @@ class _EditScreenState extends State<EditScreen> {
         builder: (context) => MapScreen(
           onLocationSelected: (String location) {
             setState(() {
-              _selectedLocation = location; // Simpan lokasi yang dipilih
+              _selectedLocation = location;
             });
           },
         ),
@@ -139,12 +180,13 @@ class _EditScreenState extends State<EditScreen> {
     final updatedItem = {
       'name': _nameController.text.trim(),
       'location': _selectedLocation,
-      'priceRange': _selectedPriceRange,
+      'minPrice': double.parse(_minPriceController.text.trim()),
+      'maxPrice': double.parse(_maxPriceController.text.trim()),
+      'dishType': _selectedDishType,
       'image': _selectedImage,
     };
 
-    Navigator.pop(
-        context, updatedItem); // Kirim data yang diperbarui ke layar sebelumnya
+    Navigator.pop(context, updatedItem);
   }
 
   void _onDeletePressed() {
@@ -155,14 +197,13 @@ class _EditScreenState extends State<EditScreen> {
         content: Text("Anda yakin ingin menghapus data ini?"),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context), // Batal
+            onPressed: () => Navigator.pop(context),
             child: Text("Batal"),
           ),
           TextButton(
             onPressed: () {
-              Navigator.pop(context); // Tutup dialog
-              Navigator.pop(context,
-                  null); // Kirim sinyal penghapusan ke layar sebelumnya
+              Navigator.pop(context);
+              Navigator.pop(context, null);
             },
             child: Text("Hapus"),
           ),
@@ -175,6 +216,8 @@ class _EditScreenState extends State<EditScreen> {
   void dispose() {
     _nameController.dispose();
     _locationController.dispose();
+    _minPriceController.dispose();
+    _maxPriceController.dispose();
     super.dispose();
   }
 }

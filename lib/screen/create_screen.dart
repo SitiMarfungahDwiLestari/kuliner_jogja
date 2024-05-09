@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:kuliner_jogja/screen/location_screen.dart';
 import 'dart:io';
 
-import 'package:kuliner_jogja/screen/location_screen.dart';
 
 class CreateScreen extends StatefulWidget {
   const CreateScreen({Key? key}) : super(key: key);
@@ -14,10 +14,19 @@ class CreateScreen extends StatefulWidget {
 class _CreateScreenState extends State<CreateScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
-  final List<String> priceRanges = ['Murah', 'Sedang', 'Mahal'];
-  String? _selectedPriceRange;
+  final TextEditingController _minPriceController = TextEditingController(); // Minimum harga
+  final TextEditingController _maxPriceController = TextEditingController(); // Maksimum harga
+  final List<String> dishTypes = [
+    'Hidangan Pembuka',
+    'Hidangan Utama',
+    'Hidangan Pencuci Mulut',
+    'Kopi',
+    'Non Kopi',
+    'Jus'
+  ];
+  String? _selectedDishType;
   File? _selectedImage;
-  String? _selectedLocation; // Lokasi yang dipilih
+  String? _selectedLocation;
   String errorMessage = '';
 
   @override
@@ -58,29 +67,60 @@ class _CreateScreenState extends State<CreateScreen> {
               SizedBox(height: 16),
               ElevatedButton(
                 onPressed: _selectLocation,
-                child: Text(_selectedLocation != null
-                    ? "Lokasi: $_selectedLocation"
-                    : "Pilih Lokasi"),
+                child: Text(_selectedLocation ?? "Pilih Lokasi"),
+              ),
+              SizedBox(height: 16),
+              Row( 
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _minPriceController, // Harga minimum
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        prefixText: "Rp", 
+                        labelText: "Kisaran Harga Minimum",
+                        hintText: "Masukkan harga minimum",
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 16), // Menambah jarak antara elemen
+                  Text(
+                    "--", // Simbol pemisah
+                    style: TextStyle(fontSize: 24),
+                  ),
+                  SizedBox(width: 16), // Jarak sebelum TextField berikutnya
+                  Expanded(
+                    child: TextField(
+                      controller: _maxPriceController, // Harga maksimum
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        prefixText: "Rp",
+                        labelText: "Kisaran Harga Maksimum",
+                        hintText: "Masukkan harga maksimum",
+                      ),
+                    ),
+                  ),
+                ],
               ),
               SizedBox(height: 16),
               DropdownButton<String>(
-                value: _selectedPriceRange,
-                hint: Text("Pilih Kisaran Harga"),
-                items: priceRanges
-                    .map((range) => DropdownMenuItem(
-                          value: range,
-                          child: Text(range),
-                        ))
+                value: _selectedDishType,
+                hint: Text("Pilih Jenis Hidangan"),
+                items: dishTypes
+                    .map((type) => DropdownMenuItem(
+                        value: type,
+                        child: Text(type),
+                    ))
                     .toList(),
                 onChanged: (value) {
                   setState(() {
-                    _selectedPriceRange = value;
+                    _selectedDishType = value;
                   });
                 },
               ),
               SizedBox(height: 16),
               ElevatedButton(
-                onPressed: _onSubmit,
+                onPressed: _onSubmit, // Menyimpan formulir
                 child: Text("Tambah"),
               ),
             ],
@@ -107,7 +147,7 @@ class _CreateScreenState extends State<CreateScreen> {
         builder: (context) => MapScreen(
           onLocationSelected: (String location) {
             setState(() {
-              _selectedLocation = location; // Simpan lokasi yang dipilih
+              _selectedLocation = location;
             });
           },
         ),
@@ -117,8 +157,10 @@ class _CreateScreenState extends State<CreateScreen> {
 
   void _onSubmit() {
     if (_nameController.text.isEmpty ||
+        _minPriceController.text.isEmpty ||
+        _maxPriceController.text.isEmpty ||
         _selectedLocation == null ||
-        _selectedPriceRange == null) {
+        _selectedDishType == null) {
       setState(() {
         errorMessage = "Semua bidang harus diisi.";
       });
@@ -128,16 +170,21 @@ class _CreateScreenState extends State<CreateScreen> {
     final newItem = {
       'name': _nameController.text.trim(),
       'location': _selectedLocation,
-      'priceRange': _selectedPriceRange,
+      'minPrice': double.parse(_minPriceController.text.trim()), // Harga minimum
+      'maxPrice': double.parse(_maxPriceController.text.trim()), // Harga maksimum
+      'dishType': _selectedDishType,
       'image': _selectedImage,
     };
 
-    Navigator.pop(context, newItem); // Kirim data kembali ke HomeScreen
+    Navigator.pop(context, newItem); // Kirim data yang diperbarui ke layar sebelumnya
   }
 
   @override
   void dispose() {
     _nameController.dispose();
+    _locationController.dispose();
+    _minPriceController.dispose();
+    _maxPriceController.dispose();
     super.dispose();
   }
 }

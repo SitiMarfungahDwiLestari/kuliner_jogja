@@ -39,7 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (newItem != null) {
       setState(() {
-        foodItems.add(newItem);
+        foodItems.add(newItem as Map<String, dynamic>);
       });
     }
   }
@@ -57,18 +57,28 @@ class _HomeScreenState extends State<HomeScreen> {
         itemCount: foodItems.length,
         itemBuilder: (context, index) {
           final item = foodItems[index];
+          final String priceRange =
+              "Rp ${item['minPrice']} - Rp ${item['maxPrice']}"; // Kisaran harga
           return Card(
             color: Colors.yellow,
             elevation: 4.0,
             margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
             child: ListTile(
               leading: item['image'] != null
-                  ? Image.file(item['image'], height: 40, width: 40, fit: BoxFit.cover)
+                  ? Image.file(item['image'],
+                      height: 40, width: 40, fit: BoxFit.cover)
                   : Icon(Icons.fastfood),
               title: Text(item['name']),
-              subtitle: Text("Lokasi: ${item['location']}"), // Tampilkan lokasi
-              trailing: Text(item['priceRange'] ?? ''),
-              onTap: () => _editFoodItem(index),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Lokasi: ${item['location']}"),
+                  Text("Jenis: ${item['dishType']}"), // Jenis hidangan
+                  Text("Harga: $priceRange"), // Kisaran harga
+                ],
+              ),
+              trailing: Icon(Icons.edit), // Ikon untuk mengedit
+              onTap: () => _editFoodItem(index), // Navigasi ke EditScreen
             ),
           );
         },
@@ -77,18 +87,20 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _editFoodItem(int index) async {
-    final editedItem = await Navigator.push(
+    final item = foodItems[index];
+    final updatedItem = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => EditScreen(foodItem: foodItems[index])),
+      MaterialPageRoute(builder: (context) => EditScreen(foodItem: item)),
     );
 
-    if (editedItem == null) {
+    if (updatedItem == null) {
+      // Jika item dihapus
       setState(() {
-        foodItems.removeAt(index); // Menghapus item jika sinyal penghapusan diterima
+        foodItems.removeAt(index); // Hapus item dari daftar
       });
     } else {
       setState(() {
-        foodItems[index] = editedItem; // Perbarui item jika ada perubahan
+        foodItems[index] = updatedItem; // Perbarui data yang diedit
       });
     }
   }
