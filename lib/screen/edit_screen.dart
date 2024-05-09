@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kuliner_jogja/controller/edit_controller.dart';
+import 'package:kuliner_jogja/model/kuliner.dart';
 
 class EditScreen extends StatefulWidget {
   final Map<String, dynamic> foodItem;
@@ -16,7 +17,7 @@ class _EditScreenState extends State<EditScreen> {
   @override
   void initState() {
     super.initState();
-    controller = EditController(widget.foodItem);
+    controller = EditController(Kuliner.fromMap(widget.foodItem));
   }
 
   @override
@@ -72,6 +73,7 @@ class _EditScreenState extends State<EditScreen> {
               ),
               SizedBox(height: 16),
               Row(
+                // Kisaran harga minimum dan maksimum
                 children: [
                   Expanded(
                     child: TextField(
@@ -112,17 +114,16 @@ class _EditScreenState extends State<EditScreen> {
                         ))
                     .toList(),
                 onChanged: (value) {
-                  setState(() {
-                    controller.selectedDishType = value!;
-                  });
+                  controller.selectedDishType = value!;
+                  setState(() {}); // Perbarui saat dishType berubah
                 },
               ),
               SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {
                   if (controller.isValid()) {
-                    final updatedItem = controller.getUpdatedData();
-                    Navigator.pop(context, updatedItem);
+                    final updatedData = controller.getUpdatedData();
+                    Navigator.pop(context, updatedData);
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -153,8 +154,8 @@ class _EditScreenState extends State<EditScreen> {
           ),
           TextButton(
             onPressed: () {
-              Navigator.pop(context); // Tutup dialog
-              Navigator.pop(context, null); // Kirim sinyal penghapusan
+              Navigator.pop(context);
+              Navigator.pop(context, null);
             },
             child: Text("Hapus"),
           ),

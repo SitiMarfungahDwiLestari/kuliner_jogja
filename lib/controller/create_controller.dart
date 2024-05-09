@@ -1,6 +1,7 @@
 import 'dart:io';
-import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:kuliner_jogja/model/kuliner.dart';
 import 'package:kuliner_jogja/screen/location_screen.dart';
 
 class CreateController {
@@ -29,7 +30,7 @@ class CreateController {
   }
 
   Future<void> selectLocation(BuildContext context) async {
-    final result = await Navigator.push(
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => MapScreen(
@@ -49,15 +50,15 @@ class CreateController {
         selectedDishType != null;
   }
 
-  Map<String, dynamic> submitData() {
-    return {
-      'name': nameController.text.trim(),
-      'location': selectedLocation,
-      'minPrice': double.parse(minPriceController.text.trim()),
-      'maxPrice': double.parse(maxPriceController.text.trim()),
-      'dishType': selectedDishType,
-      'image': selectedImage,
-    };
+  Kuliner createModel() {
+    return Kuliner(
+      name: nameController.text.trim(),
+      location: selectedLocation!,
+      minPrice: double.parse(minPriceController.text.trim()),
+      maxPrice: double.parse(maxPriceController.text.trim()),
+      dishType: selectedDishType!,
+      image: selectedImage,
+    );
   }
 
   void dispose() {

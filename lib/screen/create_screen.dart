@@ -69,7 +69,7 @@ class _CreateScreenState extends State<CreateScreen> {
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
                         prefixText: "Rp",
-                        labelText: "Kisaran Harga Minimum",
+                        labelText: "Harga Minimum",
                       ),
                     ),
                   ),
@@ -85,7 +85,7 @@ class _CreateScreenState extends State<CreateScreen> {
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
                         prefixText: "Rp",
-                        labelText: "Kisaran Harga Maksimum",
+                        labelText: "Harga Maksimum",
                       ),
                     ),
                   ),
@@ -102,21 +102,23 @@ class _CreateScreenState extends State<CreateScreen> {
                         ))
                     .toList(),
                 onChanged: (value) {
-                  setState(() {
-                    controller.selectedDishType = value;
-                  });
+                  controller.selectedDishType = value;
+                  setState(
+                      () {}); // Perbarui tampilan saat jenis hidangan berubah
                 },
               ),
               SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {
                   if (controller.isValid()) {
-                    final newItem = controller.submitData();
+                    final newItem = controller.createModel().toMap();
                     Navigator.pop(context, newItem);
                   } else {
-                    setState(() {
-                      controller.errorMessage = "Semua bidang harus diisi.";
-                    });
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text("Pastikan semua bidang diisi."),
+                      ),
+                    );
                   }
                 },
                 child: Text("Tambah"),

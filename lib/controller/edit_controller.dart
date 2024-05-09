@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:kuliner_jogja/model/kuliner.dart';
 import 'package:kuliner_jogja/screen/location_screen.dart';
 
 class EditController {
@@ -19,16 +20,16 @@ class EditController {
     'Jus'
   ];
 
-  EditController(Map<String, dynamic> foodItem) {
-    nameController = TextEditingController(text: foodItem['name']);
+  EditController(Kuliner foodItem) {
+    nameController = TextEditingController(text: foodItem.name);
     minPriceController = TextEditingController(
-        text: foodItem['minPrice'].toString()); // Mengonversi ke string
+        text: foodItem.minPrice.toString()); // Mengonversi ke string
     maxPriceController =
-        TextEditingController(text: foodItem['maxPrice'].toString());
-    selectedDishType = foodItem['dishType'] ?? '';
-    selectedLocation = foodItem['location'];
-    if (foodItem['image'] != null) {
-      selectedImage = foodItem['image'];
+        TextEditingController(text: foodItem.maxPrice.toString());
+    selectedDishType = foodItem.dishType;
+    selectedLocation = foodItem.location;
+    if (foodItem.image != null) {
+      selectedImage = foodItem.image;
     }
   }
 
@@ -58,7 +59,7 @@ class EditController {
         minPriceController.text.isNotEmpty &&
         maxPriceController.text.isNotEmpty &&
         selectedLocation != null &&
-        selectedDishType != null;
+        selectedDishType.isNotEmpty;
   }
 
   Map<String, dynamic> getUpdatedData() {
