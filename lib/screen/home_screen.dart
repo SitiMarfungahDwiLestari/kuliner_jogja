@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:kuliner_jogja/controller/home_controller.dart';
-import 'package:kuliner_jogja/model/kuliner.dart';
 import 'package:kuliner_jogja/screen/create_screen.dart';
 import 'package:kuliner_jogja/screen/edit_screen.dart';
 
@@ -15,7 +14,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final HomeController controller = HomeController(); // Inisialisasi controller
-  bool dataFetched = false; // Menandakan apakah data sudah diambil
+  bool isLoading = true; // Status loading
 
   @override
   void initState() {
@@ -25,13 +24,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> fetchKuliner() async {
     try {
-      await controller.fetchKuliners(); // Ambil data kuliner dari controller
+      await controller.fetchKuliners(); // Ambil data dari controller
       setState(() {
-        dataFetched = true; // Setelah data berhasil diambil
+        isLoading = false; // Setelah data diambil, matikan loading
       });
     } catch (e) {
       setState(() {
-        dataFetched = true; // Ubah status agar tidak terus loading
+        isLoading = false; // Selalu matikan loading
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Gagal mengambil data kuliner: $e")),
@@ -50,17 +49,14 @@ class _HomeScreenState extends State<HomeScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => CreateScreen()),
-          ).then((_) {
-            fetchKuliner(); // Perbarui data setelah menambahkan item
-          });
+          ).then((_) => fetchKuliner()); // Ambil ulang data setelah kembali
         },
         child: Icon(Icons.add),
       ),
       body: SafeArea(
-        child: dataFetched
-            ? _buildContent()
-            : Center(
-                child: CircularProgressIndicator()), // Tampilkan loading jika belum diambil
+        child: isLoading
+            ? Center(child: CircularProgressIndicator()) // Tampilkan loading
+            : _buildContent(), // Tampilkan konten setelah data diambil
       ),
     );
   }
@@ -78,22 +74,18 @@ class _HomeScreenState extends State<HomeScreen> {
         itemCount: controller.kulinerList.length,
         itemBuilder: (context, index) {
           final item = controller.kulinerList[index];
-          final priceRange = "Rp ${item.minPrice} - Rp ${item.maxPrice}";
           return Card(
-            color: Colors.yellow,
             elevation: 4.0,
             margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
             child: ListTile(
-              leading: item.image != null
-                  ? Image.file(item.image!, height: 40, width: 40, fit: BoxFit.cover)
-                  : Icon(Icons.fastfood),
+              leading: Icon(Icons.fastfood),
               title: Text(item.name),
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text("Lokasi: ${item.location}"),
-                  Text("Jenis: ${item.dishType}"), // Menampilkan jenis hidangan
-                  Text("Harga: $priceRange"), // Menampilkan kisaran harga
+                  Text("Jenis: ${item.dishType}"),
+                  Text("Harga: Rp${item.minPrice} - Rp${item.maxPrice}"),
                 ],
               ),
               trailing: Icon(Icons.edit), // Ikon untuk mengedit
@@ -101,11 +93,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => EditScreen(foodItem: item.toMap()),
+                    builder: (context) => EditScreen(
+                      foodItem: item.toMap(),
+                    ),
                   ),
-                ).then((_) {
-                  fetchKuliner(); // Perbarui data setelah diedit
-                });
+                ).then((_) => fetchKuliner()); // Ambil ulang setelah diedit
               },
             ),
           );
