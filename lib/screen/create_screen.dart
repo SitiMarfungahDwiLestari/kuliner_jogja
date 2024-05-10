@@ -55,13 +55,16 @@ class _CreateScreenState extends State<CreateScreen> {
               ),
               SizedBox(height: 16),
               // Input untuk lokasi
-              TextField(
-                controller: controller.locationController,
-                decoration: InputDecoration(
-                  labelText: "Lokasi",
-                  hintText: "Masukkan lokasi",
-                ),
+              ElevatedButton(
+                onPressed: () async {
+                  await controller
+                      .selectLocation(context); // Buka pemilih lokasi
+                  setState(() {}); // Perbarui tampilan setelah memilih lokasi
+                },
+                child: Text(controller.selectedLocation ??
+                    "Pilih Lokasi"), // Tampilkan teks yang benar
               ),
+
               SizedBox(height: 16),
               // Input untuk kisaran harga
               Row(

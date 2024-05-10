@@ -1,16 +1,19 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:kuliner_jogja/model/kuliner.dart';
+import 'package:kuliner_jogja/screen/location_screen.dart';
 import 'package:kuliner_jogja/service/kuliner_service.dart';
 import 'package:image_picker/image_picker.dart'; // Untuk memilih gambar
 
 class CreateController extends ChangeNotifier {
-  final KulinerService kulinerService = KulinerService(); // Service yang sudah dibuat
+  final KulinerService kulinerService =
+      KulinerService(); // Service yang sudah dibuat
   final TextEditingController nameController = TextEditingController();
   final TextEditingController locationController = TextEditingController();
   final TextEditingController minPriceController = TextEditingController();
   final TextEditingController maxPriceController = TextEditingController();
   File? selectedImage; // Untuk menyimpan gambar yang dipilih
+  String? selectedLocation;
   String? selectedDishType; // Untuk jenis hidangan yang dipilih
 
   // Fungsi untuk memilih gambar
@@ -23,12 +26,26 @@ class CreateController extends ChangeNotifier {
     }
   }
 
+  Future<void> selectLocation(BuildContext context) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MapScreen(
+          onLocationSelected: (String location) {
+            selectedLocation = location;
+          },
+        ),
+      ),
+    );
+  }
+
   // Fungsi untuk membuat kuliner baru
   Future<void> createKuliner() async {
-    if (isValid()) { // Periksa validitas input
+    if (isValid()) {
+      // Periksa validitas input
       Kuliner newKuliner = Kuliner(
         name: nameController.text.trim(),
-        location: locationController.text.trim(),
+        location: selectedLocation ?? '',
         minPrice: double.parse(minPriceController.text.trim()),
         maxPrice: double.parse(maxPriceController.text.trim()),
         dishType: selectedDishType ?? '', // Pastikan nilai tidak kosong
@@ -36,7 +53,8 @@ class CreateController extends ChangeNotifier {
       );
 
       try {
-        final isSuccess = await kulinerService.createKuliner(newKuliner); // Panggil service
+        final isSuccess =
+            await kulinerService.createKuliner(newKuliner); // Panggil service
         if (!isSuccess) {
           throw Exception('Gagal membuat kuliner');
         }
@@ -52,9 +70,9 @@ class CreateController extends ChangeNotifier {
   // Validasi untuk memastikan input lengkap
   bool isValid() {
     return nameController.text.isNotEmpty &&
-        locationController.text.isNotEmpty &&
         minPriceController.text.isNotEmpty &&
         maxPriceController.text.isNotEmpty &&
+        selectedLocation != null &&
         selectedDishType != null;
   }
 
